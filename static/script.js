@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDate = document.getElementById('selected-date');
     const selectedTextPreview = document.getElementById('selected-text-preview');
     const tweetBtn = document.getElementById('tweet-btn');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
 
     // State variables
     let allUpdates = []; // Parsed individual release update items
@@ -190,6 +191,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 badge.textContent = update.type;
                 meta.appendChild(badge);
 
+                // Action controls container (Copy, Link)
+                const actionsDiv = document.createElement('div');
+                actionsDiv.style.display = 'flex';
+                actionsDiv.style.gap = '0.4rem';
+                actionsDiv.style.alignItems = 'center';
+
+                // Copy to Clipboard Button
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'card-action-btn';
+                copyBtn.title = 'Copy update text to clipboard';
+                copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+                copyBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    try {
+                        await navigator.clipboard.writeText(update.plainText);
+                        // Swap to success checkmark
+                        copyBtn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--color-feature);"></i>';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                    }
+                });
+                actionsDiv.appendChild(copyBtn);
+
                 if (update.link) {
                     const link = document.createElement('a');
                     link.className = 'card-link';
@@ -198,9 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.title = 'View official GCP release notes';
                     link.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i>';
                     link.addEventListener('click', (e) => e.stopPropagation()); // prevent card selection trigger
-                    meta.appendChild(link);
+                    actionsDiv.appendChild(link);
                 }
 
+                meta.appendChild(actionsDiv);
                 card.appendChild(meta);
 
                 // Body content
@@ -328,10 +356,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Export currently filtered list to CSV and trigger download
+    function exportToCSV() {
+        const searchQuery = searchInput.value.toLowerCase().trim();
+        const filtered = allUpdates.filter(update => {
+            const matchesType = currentFilterType === 'all' || 
+                                update.type.toLowerCase() === currentFilterType;
+            const matchesSearch = searchQuery === '' || 
+                                  update.plainText.toLowerCase().includes(searchQuery) ||
+                                  update.date.toLowerCase().includes(searchQuery) ||
+                                  update.type.toLowerCase().includes(searchQuery);
+            return matchesType && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+            alert("No notes available to export.");
+            return;
+        }
+
+        // CSV Header
+        const headers = ["Date", "Type", "Description", "Link"];
+        
+        // Escape helper for CSV cells
+        const escapeCSV = (text) => {
+            if (!text) return '""';
+            const formatted = text.replace(/"/g, '""');
+            return `"${formatted}"`;
+        };
+
+        const rows = filtered.map(update => [
+            escapeCSV(update.date),
+            escapeCSV(update.type),
+            escapeCSV(update.plainText),
+            escapeCSV(update.link)
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        // Create Blob and trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        
+        const timestamp = new Date().toISOString().split('T')[0];
+        const typeFilterName = currentFilterType !== 'all' ? `_${currentFilterType}` : '';
+        link.setAttribute('download', `bigquery_release_notes${typeFilterName}_${timestamp}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     // Event Listeners
     refreshBtn.addEventListener('click', fetchReleaseNotes);
     retryBtn.addEventListener('click', fetchReleaseNotes);
     tweetBtn.addEventListener('click', shareToTwitter);
+    exportCsvBtn.addEventListener('click', exportToCSV);
 
     // Live search input filtering
     searchInput.addEventListener('input', () => {

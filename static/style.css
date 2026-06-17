@@ -540,6 +540,25 @@ body {
     color: var(--accent-cyan);
 }
 
+.card-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.2rem;
+    border-radius: 4px;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-action-btn:hover {
+    color: var(--accent-cyan);
+    background: rgba(255, 255, 255, 0.05);
+}
+
 /* Card Content HTML Formatting */
 .card-desc {
     color: var(--text-primary);
