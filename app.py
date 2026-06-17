@@ -3,6 +3,7 @@ import requests
 from flask import Flask, jsonify, render_template
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 FEED_URL = "https://docs.cloud.google.com/feeds/bigquery-release-notes.xml"
 
