@@ -50,12 +50,12 @@
             <div class="filter-panel">
                 <span class="filter-label">Filter by type:</span>
                 <div class="filter-tags">
-                    <button class="filter-btn active" data-type="all" id="btn-filter-all">All</button>
-                    <button class="filter-btn" data-type="feature" id="btn-filter-feature">Features</button>
-                    <button class="filter-btn" data-type="announcement" id="btn-filter-announcement">Announcements</button>
-                    <button class="filter-btn" data-type="change" id="btn-filter-change">Changes</button>
-                    <button class="filter-btn" data-type="issue" id="btn-filter-issue">Issues</button>
-                    <button class="filter-btn" data-type="breaking" id="btn-filter-breaking">Breaking</button>
+                    <button class="filter-btn active" data-type="all" id="btn-filter-all">All <span class="filter-count" id="count-all"></span></button>
+                    <button class="filter-btn" data-type="feature" id="btn-filter-feature">Features <span class="filter-count" id="count-feature"></span></button>
+                    <button class="filter-btn" data-type="announcement" id="btn-filter-announcement">Announcements <span class="filter-count" id="count-announcement"></span></button>
+                    <button class="filter-btn" data-type="change" id="btn-filter-change">Changes <span class="filter-count" id="count-change"></span></button>
+                    <button class="filter-btn" data-type="issue" id="btn-filter-issue">Issues <span class="filter-count" id="count-issue"></span></button>
+                    <button class="filter-btn" data-type="breaking" id="btn-filter-breaking">Breaking <span class="filter-count" id="count-breaking"></span></button>
                 </div>
             </div>
 
@@ -101,11 +101,33 @@
 
         <!-- Main Display Panel -->
         <main class="main-content">
-            <!-- Loading Indicator -->
-            <div id="loading-overlay" class="loading-overlay">
-                <div class="loader">
-                    <div class="loader-spinner"></div>
-                    <p>Fetching latest release notes...</p>
+            <!-- Skeleton Loading State -->
+            <div id="skeleton-container" class="skeleton-container hidden">
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-badge"></div>
+                        <div class="skeleton-icon"></div>
+                    </div>
+                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-badge"></div>
+                        <div class="skeleton-icon"></div>
+                    </div>
+                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-badge"></div>
+                        <div class="skeleton-icon"></div>
+                    </div>
+                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
                 </div>
             </div>
 
@@ -130,6 +152,9 @@
             </div>
         </main>
     </div>
+
+    <!-- Toast Container for Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Script file -->
     <script src="/static/script.js"></script>

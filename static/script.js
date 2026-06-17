@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const filterButtons = document.querySelectorAll('.filter-btn');
     const notesContainer = document.getElementById('notes-container');
-    const loadingOverlay = document.getElementById('loading-overlay');
+    const skeletonContainer = document.getElementById('skeleton-container');
     const errorContainer = document.getElementById('error-container');
     const errorMessage = document.getElementById('error-message');
     const retryBtn = document.getElementById('retry-btn');
@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allUpdates = []; // Parsed individual release update items
     let selectedUpdate = null;
     let currentFilterType = 'all';
+    let lastVisitTime = null;
 
     // Theme Switcher Logic
     const checkboxTheme = document.getElementById('checkbox-theme');
@@ -54,6 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setEmptyState(false);
         clearSelection();
 
+        // Load the last visit time and save the current session visit time
+        lastVisitTime = localStorage.getItem('last_visit_time');
+        const nowIso = new Date().toISOString();
+
         try {
             const response = await fetch('/api/notes');
             if (!response.ok) {
@@ -66,7 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Parse entries into discrete update cards
             allUpdates = parseFeedEntries(data.entries);
+            updateFilterCounts();
             renderUpdates();
+
+            // Save the visit time for the next session
+            localStorage.setItem('last_visit_time', nowIso);
         } catch (error) {
             console.error('Error fetching release notes:', error);
             errorMessage.textContent = error.message;
@@ -212,6 +221,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 badge.textContent = update.type;
                 meta.appendChild(badge);
 
+                // Check if it's a new update since last visit
+                if (lastVisitTime && update.updatedTime) {
+                    const updateDate = new Date(update.updatedTime);
+                    const lastVisitDate = new Date(lastVisitTime);
+                    if (updateDate > lastVisitDate) {
+                        const newDot = document.createElement('span');
+                        newDot.className = 'new-dot';
+                        newDot.title = 'New update since your last visit';
+                        meta.appendChild(newDot);
+                    }
+                }
+
                 // Action controls container (Copy, Link)
                 const actionsDiv = document.createElement('div');
                 actionsDiv.style.display = 'flex';
@@ -229,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         await navigator.clipboard.writeText(update.plainText);
                         // Swap to success checkmark
                         copyBtn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--color-feature);"></i>';
+                        showToast("Copied to clipboard!");
                         setTimeout(() => {
                             copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
                         }, 2000);
@@ -258,9 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 desc.innerHTML = update.contentHtml;
                 card.appendChild(desc);
 
-                // Click event to select card
+                // Click and Keyboard events to select card
+                card.setAttribute('tabindex', '0');
                 card.addEventListener('click', () => {
                     selectUpdate(update, card);
+                });
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectUpdate(update, card);
+                    }
                 });
 
                 dayGroup.appendChild(card);
@@ -344,14 +373,16 @@ document.addEventListener('DOMContentLoaded', () => {
         window.open(tweetUrl, '_blank', 'width=550,height=420');
     }
 
-    // Overlay Loading state toggler
+    // Pulse Skeleton state toggler
     function showLoading(isLoading) {
         if (isLoading) {
-            loadingOverlay.classList.remove('hidden');
+            skeletonContainer.classList.remove('hidden');
+            notesContainer.classList.add('hidden');
             refreshIcon.classList.add('spinning');
             refreshBtn.disabled = true;
         } else {
-            loadingOverlay.classList.add('hidden');
+            skeletonContainer.classList.add('hidden');
+            notesContainer.classList.remove('hidden');
             refreshIcon.classList.remove('spinning');
             refreshBtn.disabled = false;
         }
@@ -391,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (filtered.length === 0) {
-            alert("No notes available to export.");
+            showToast("No notes available to export.");
             return;
         }
 
@@ -430,6 +461,44 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
+        showToast("CSV exported successfully!");
+    }
+
+    // Helper: Toast notifications popups
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: var(--color-feature);"></i> <span>${message}</span>`;
+        container.appendChild(toast);
+        
+        // Triggers fade & slide in
+        setTimeout(() => toast.classList.add('show'), 50);
+        
+        // Auto fadeout after 3s
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 3000);
+    }
+
+    // Helper: Calculate count badges for each category button
+    function updateFilterCounts() {
+        const counts = { all: allUpdates.length, feature: 0, announcement: 0, change: 0, issue: 0, breaking: 0 };
+        allUpdates.forEach(update => {
+            const type = update.type.toLowerCase();
+            if (counts[type] !== undefined) {
+                counts[type]++;
+            }
+        });
+        
+        for (const [key, val] of Object.entries(counts)) {
+            const element = document.getElementById(`count-${key}`);
+            if (element) {
+                element.textContent = `(${val})`;
+            }
+        }
     }
 
     // Event Listeners
