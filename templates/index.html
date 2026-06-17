@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Hub</title>
+    <meta name="description" content="A premium dashboard to browse, search, and share Google Cloud BigQuery release updates.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar or Header Panel -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>BigQuery</h1>
+                    <span class="subtitle">Release Notes Hub</span>
+                </div>
+            </div>
+            
+            <p class="description">
+                Browse Google Cloud BigQuery updates, search historical releases, and select any item to tweet directly.
+            </p>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search updates..." autocomplete="off">
+            </div>
+
+            <div class="filter-panel">
+                <span class="filter-label">Filter by type:</span>
+                <div class="filter-tags">
+                    <button class="filter-btn active" data-type="all" id="btn-filter-all">All</button>
+                    <button class="filter-btn" data-type="feature" id="btn-filter-feature">Features</button>
+                    <button class="filter-btn" data-type="announcement" id="btn-filter-announcement">Announcements</button>
+                    <button class="filter-btn" data-type="change" id="btn-filter-change">Changes</button>
+                    <button class="filter-btn" data-type="issue" id="btn-filter-issue">Issues</button>
+                    <button class="filter-btn" data-type="breaking" id="btn-filter-breaking">Breaking</button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="refresh-btn" class="btn btn-primary" title="Refresh Release Notes">
+                    <i class="fa-solid fa-arrows-rotate spinner-icon" id="refresh-icon"></i>
+                    <span>Refresh Feed</span>
+                </button>
+            </div>
+
+            <!-- Selection Showcase -->
+            <div class="selection-card" id="selection-card">
+                <div class="card-header">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <h3>Selected Update</h3>
+                </div>
+                <div class="card-body">
+                    <p id="selection-placeholder">Select any update card to preview and tweet about it.</p>
+                    <div id="selection-content" class="hidden">
+                        <div class="selected-meta">
+                            <span class="selected-badge" id="selected-badge-type">Feature</span>
+                            <span class="selected-date" id="selected-date">June 16, 2026</span>
+                        </div>
+                        <p class="selected-text" id="selected-text-preview"></p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button id="tweet-btn" class="btn btn-tweet" disabled>
+                        <i class="fa-brands fa-x-twitter"></i>
+                        <span>Tweet Selected Update</span>
+                    </button>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                <p>Data synced from Google Cloud feed.</p>
+            </footer>
+        </header>
+
+        <!-- Main Display Panel -->
+        <main class="main-content">
+            <!-- Loading Indicator -->
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    <p>Fetching latest release notes...</p>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-container" class="error-container hidden">
+                <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                <h2>Failed to fetch release notes</h2>
+                <p id="error-message">Please check your internet connection and try again.</p>
+                <button id="retry-btn" class="btn btn-secondary">Retry Fetch</button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <i class="fa-solid fa-box-open empty-icon"></i>
+                <h2>No updates found</h2>
+                <p>Try clearing your search query or choosing a different filter.</p>
+            </div>
+
+            <!-- Notes List -->
+            <div id="notes-container" class="notes-container">
+                <!-- Javascript will render cards here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Script file -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
