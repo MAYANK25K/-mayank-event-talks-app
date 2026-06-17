@@ -26,6 +26,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedUpdate = null;
     let currentFilterType = 'all';
 
+    // Theme Switcher Logic
+    const checkboxTheme = document.getElementById('checkbox-theme');
+    
+    // Load preference or default to dark theme
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    
+    if (currentTheme === 'light') {
+        checkboxTheme.checked = true;
+    }
+    
+    checkboxTheme.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+
     // Fetch notes from the proxy API
     async function fetchReleaseNotes() {
         showLoading(true);
